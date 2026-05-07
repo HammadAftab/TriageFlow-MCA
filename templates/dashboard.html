@@ -1,0 +1,81 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TriageFlow Dashboard</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body { background: #f5f7fb; font-family: 'Segoe UI', sans-serif; }
+.navbar { background: #764ba2; }
+.navbar-brand { color: white !important; font-weight: bold; }
+.card { border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+.badge-open { background: #ffc107; }
+.badge-closed { background: #28a745; }
+.badge-pending { background: #17a2b8; }
+.form-section { background: white; padding: 20px; border-radius: 15px; }
+</style>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg">
+<div class="container-fluid">
+    <span class="navbar-brand">TriageFlow</span>
+    <div class="ms-auto text-white">
+    Welcome, {{ request.user.username }} |
+    
+    <a href="{% url 'my_tickets' %}" class="text-white text-decoration-underline me-3">
+        My Tickets
+    </a>
+
+    <a href="{% url 'logout' %}" class="btn btn-sm btn-light">
+        Logout
+    </a>
+    </div>
+</div>
+</nav>
+
+<div class="container mt-4">
+
+<!-- Submit Query -->
+<div class="form-section mb-4">
+    <h5>Submit a Query</h5>
+    <form method="POST">
+        {% csrf_token %}
+        <textarea name="query" class="form-control mb-2" placeholder="Enter your query" required></textarea>
+        <button class="btn btn-primary">Submit</button>
+    </form>
+</div>
+
+<!-- ALL TICKETS (Blog Style) -->
+<h5 class="mb-3">All Queries</h5>
+<div class="row g-3">
+    {% for ticket in all_tickets %}
+    <div class="col-md-4">
+        <div class="card p-3">
+            <h6>{{ ticket.created_by.username }}</h6>
+            <p>{{ ticket.query }}</p>
+            <small>{{ ticket.created_at }}</small><br>
+            <span class="badge 
+                {% if ticket.status == 'Open' %}badge-open
+                {% elif ticket.status == 'Closed' %}badge-closed
+                {% else %}badge-pending
+                {% endif %}">
+                {{ ticket.status }}
+            </span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+</div>
+
+</body>
+</html>
+
+
+
