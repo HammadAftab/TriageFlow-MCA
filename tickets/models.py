@@ -8,25 +8,24 @@ class Ticket(models.Model):
         ('Closed', 'Closed')
     ]
 
-    # Who created the ticket (user/customer)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='created_tickets'
     )
 
-    # Who is assigned (employee)
-    assigned_to = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='assigned_tickets'
-    )
-
     query = models.TextField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Open')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    ticket_level = models.CharField(max_length=2,
+    choices=[
+        ('L3', 'L3'),
+        ('L2', 'L2'),
+        ('L1', 'L1'),
+    ],
+    default='L3'
+    )
 
     def __str__(self):
         return self.query[:50]
