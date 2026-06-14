@@ -62,22 +62,74 @@ body { background: #f5f7fb; font-family: 'Segoe UI', sans-serif; }
     <h5 class="mb-3">My Tickets</h5>
 {% endif %}
 <div class="row g-3">
-    {% for ticket in all_tickets %}
-    <div class="col-md-4">
-        <div class="card p-3">
-            <h6>{{ ticket.created_by.username }}</h6>
-            <p>{{ ticket.query }}</p>
-            <small>{{ ticket.created_at }}</small><br>
-            <span class="badge 
-                {% if ticket.status == 'Open' %}badge-open
-                {% elif ticket.status == 'Closed' %}badge-closed
-                {% else %}badge-pending
-                {% endif %}">
-                {{ ticket.status }}
-            </span>
-        </div>
-    </div>
-    {% endfor %}
+
+{% for ticket in all_tickets %}
+
+<div class="col-md-4">
+
+<div class="card p-3 h-100">
+
+<h6>
+Raised by:
+{{ ticket.created_by.username }}
+</h6>
+
+<p>
+{{ ticket.query|truncatechars:120 }}
+</p>
+
+<div class="mb-2">
+
+<small class="text-muted">
+{{ ticket.created_at }}
+</small>
+
+</div>
+
+<div class="mb-3">
+
+<span class="badge
+{% if ticket.status == 'Open' %}
+badge-open
+{% elif ticket.status == 'Closed' %}
+badge-closed
+{% else %}
+badge-pending
+{% endif %}
+">
+
+{{ ticket.status }}
+
+</span>
+
+</div>
+
+{% if is_employee %}
+
+<a
+href="{% url 'ticket_detail' ticket.id %}"
+class="btn btn-primary w-100">
+
+Open Ticket →
+
+</a>
+
+{% endif %}
+
+</div>
+
+</div>
+
+{% empty %}
+
+<div class="text-center mt-4">
+
+<h5>No tickets available</h5>
+
+</div>
+
+{% endfor %}
+
 </div>
 
 </div>
