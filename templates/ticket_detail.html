@@ -240,15 +240,17 @@ class="btn btn-success btn-action flex-fill">
 </button>
 
 
+{% if employee.position != "L3" and ticket.status != "Closed" %}
 <button
 type="submit"
 name="action"
 value="escalate"
 class="btn btn-outline-danger btn-action">
 
-Escalate ticket and go to dashboard →
+Escalate Ticket & Go to Dashboard →
 
 </button>
+{% endif %}
 
 </div>
 

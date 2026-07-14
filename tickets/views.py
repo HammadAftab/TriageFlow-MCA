@@ -71,19 +71,29 @@ def ticket_detail(request, ticket_id):
             ticket.status = "Closed"
             ticket.resolved_by = employee.employee_id
             ticket.resolved_at = timezone.now()
+            ticket.save()
             
         elif action == "escalate":
-            if ticket.current_level == "L1":
+            if employee.position == "L1":
                 ticket.current_level = "L2"
-            elif ticket.current_level == "L2":
+            elif employee.position == "L2":
                 ticket.current_level = "L3"
+            else:
+                messages.error(request, "L3 tickets cannot be escalated.")
+                return redirect("ticket_detail", ticket_id=ticket.id)
 
             ticket.status = "Open"
             ticket.save()
-            messages.success(request, f"Ticket escalated to {ticket.current_level} successfully.")
+
+            messages.success(
+                request,
+                f"Ticket escalated to {ticket.current_level} successfully."
+            )
+            
             return redirect("dashboard")
 
     return render(request, "ticket_detail.html", {
             "ticket": ticket,
+            "employee": employee,
             "is_employee": is_employee
     })
