@@ -22,6 +22,8 @@ class Ticket(models.Model):
         related_name='created_tickets'
     )
 
+    subject = models.CharField(max_length=255, blank=True)
+
     query = models.TextField()
 
     status = models.CharField(

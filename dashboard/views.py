@@ -23,11 +23,10 @@ def dashboard_view(request):
         employee = Employee.objects.get(user=request.user)
 
         # Employee Dashboard
-        if employee.position == 'L1':
-            tickets = Ticket.objects.all().order_by('-created_at')
-
-        else:
-            tickets = []
+        tickets = Ticket.objects.filter(
+            ticket_level=employee.position,
+            status='Open'
+        ).order_by('-created_at')
 
         return render(request, 'dashboard.html', {
             'all_tickets': tickets,

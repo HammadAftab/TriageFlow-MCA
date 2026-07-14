@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from .models import Ticket
 from users.models import Employee
@@ -19,6 +20,19 @@ def my_tickets(request):
             "my_tickets": tickets
         }
     )
+
+@login_required
+def raise_ticket(request):
+    if request.method == "POST":
+        subject = request.POST.get("subject", "")
+        body = request.POST.get("body", "")
+        Ticket.objects.create(
+            created_by=request.user,
+            subject=subject,
+            query=body
+        )
+        return redirect("dashboard")
+    return render(request, "raise_ticket.html")
 
 
 @login_required
@@ -57,12 +71,12 @@ def ticket_detail(request, ticket_id):
 
         ticket.save()
 
+    is_employee = False
     try:
-        employee = Employee.objects.get(
-            user=request.user
-        )
-
+        employee = Employee.objects.get(user=request.user)
+        is_employee = True
     except Employee.DoesNotExist:
+        employee = None
         return redirect("dashboard")
 
     if request.method == "POST":
@@ -75,31 +89,18 @@ def ticket_detail(request, ticket_id):
 
             ticket.resolved_by = employee.employee_id
 
-            ticket.status = "Closed"
-
-            ticket.resolved_by = employee.employee_id
-
         elif action == "escalate":
-
             if ticket.ticket_level == "L1":
                 ticket.ticket_level = "L2"
-
             elif ticket.ticket_level == "L2":
                 ticket.ticket_level = "L3"
 
-            ticket.status = "Pending"
+            ticket.status = "Open"
+            ticket.save()
+            messages.success(request, f"Ticket escalated to {ticket.ticket_level} successfully.")
+            return redirect("dashboard")
 
-        ticket.save()
-
-        return redirect(
-            "ticket_detail",
-            ticket_id=ticket.id
-        )
-
-    return render(
-        request,
-        "ticket_detail.html",
-        {
-            "ticket": ticket
-        }
-    )
+    return render(request, "ticket_detail.html", {
+            "ticket": ticket,
+            "is_employee": is_employee
+        })
