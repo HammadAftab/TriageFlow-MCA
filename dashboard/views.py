@@ -8,12 +8,12 @@ from users.models import Employee
 def dashboard_view(request):
 
     if request.method == 'POST':
-        query = request.POST.get('query')
+        body = request.POST.get('body')
 
-        if query:
+        if body:
             Ticket.objects.create(
                 created_by=request.user,
-                query=query
+                body=body
             )
 
         return redirect('dashboard')
@@ -24,7 +24,7 @@ def dashboard_view(request):
 
         # Employee Dashboard
         tickets = Ticket.objects.filter(
-            ticket_level=employee.position,
+            current_level=employee.position,
             status='Open'
         ).order_by('-created_at')
 

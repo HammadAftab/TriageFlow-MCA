@@ -137,15 +137,26 @@ Raised By
 <div class="section">
 
 <div class="label">
+Subject
+</div>
+
+<div class="value">
+<h5>{{ ticket.subject }}</h5>
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="label">
 Issue Description
 </div>
 
 <div class="value">
-{{ ticket.query }}
+<h5>{{ ticket.body }}</h5>
 </div>
 
 </div>
-
 
 <div class="section ai-box">
 
@@ -162,7 +173,7 @@ Classification
 </div>
 
 <div class="value">
-{{ ticket.classification }}
+{{ ticket.predicted_queue }}
 </div>
 
 </div>
@@ -194,7 +205,7 @@ Support Level
 </div>
 
 <div class="value">
-{{ ticket.ticket_level }}
+{{ ticket.current_level }}
 </div>
 
 </div>
@@ -207,22 +218,7 @@ Support Level
 Suggested Resolution
 </div>
 
-<pre>{{ ticket.suggested_resolution }}</pre>
-{% if ticket.escalation_reason %}
-
-<div class="alert alert-warning mt-4">
-
-<strong>
-Escalation Suggested
-</strong>
-
-<hr>
-
-{{ ticket.escalation_reason }}
-
-</div>
-
-{% endif %}
+<pre>{{ ticket.resolution }}</pre>
 
 </div>
 

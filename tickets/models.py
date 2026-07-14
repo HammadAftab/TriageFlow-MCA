@@ -24,7 +24,7 @@ class Ticket(models.Model):
 
     subject = models.CharField(max_length=255, blank=True)
 
-    query = models.TextField()
+    body = models.TextField()
 
     status = models.CharField(
         max_length=10,
@@ -32,21 +32,23 @@ class Ticket(models.Model):
         default='Open'
     )
 
-    ticket_level = models.CharField(
+    current_level = models.CharField(
         max_length=2,
         choices=LEVEL_CHOICES,
         default='L1'
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    resolved_at = models.DateTimeField(null=True, blank=True)
 
     # AI fields
-    classification = models.CharField(
+    predicted_queue = models.CharField(
         max_length=100,
         blank=True
     )
 
-    suggested_resolution = models.TextField(
+    resolution = models.TextField(
         blank=True
     )
 
@@ -59,10 +61,7 @@ class Ticket(models.Model):
         blank=True
     )
 
-    escalation_reason = models.TextField(
-    blank=True,
-    null=True
-)
+   
 
     def __str__(self):
-        return self.query[:50]
+        return self.body[:50]

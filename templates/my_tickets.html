@@ -14,7 +14,7 @@
 
     {% for ticket in my_tickets %}
     <div class="card p-3 mb-2">
-        <p>{{ ticket.query }}</p>
+        <p>{{ ticket.body }}</p>
         <small>{{ ticket.created_at }}</small><br>
         <strong>Status: {{ ticket.status }}</strong>
     </div>
