@@ -6,6 +6,8 @@ from django.utils import timezone
 from .models import Ticket
 from users.models import Employee
 
+from ai.scripts.classifier import predict_queue
+
 
 @login_required
 def my_tickets(request):
@@ -22,12 +24,19 @@ def raise_ticket(request):
     if request.method == "POST":
         subject = request.POST.get("subject", "")
         body = request.POST.get("body", "")
+
+        predicted_queue, confidence = predict_queue(subject, body)
+
         Ticket.objects.create(
             created_by=request.user,
             subject=subject,
-            body=body
+            body=body,
+            predicted_queue=predicted_queue,
+            confidence_score=confidence
         )
+
         return redirect("dashboard")
+
     return render(request, "raise_ticket.html")
 
 
@@ -40,20 +49,21 @@ def ticket_detail(request, ticket_id):
     )
 
     # Temporary AI simulation
-    if not ticket.predicted_queue:
-
-        ticket.predicted_queue = "Technical Issue"
-
-        ticket.resolution = (
-            "1. Verify credentials\n"
-            "2. Restart service\n"
-            "3. Clear cache\n"
-            "4. Retry"
-        )
-
-        ticket.confidence_score = 0.42
-
-        ticket.save()
+    
+#   if not ticket.predicted_queue:
+#
+#     ticket.predicted_queue = "Technical Support"
+#
+#     ticket.resolution = (
+#         "1. Verify credentials\n"
+#         "2. Restart service\n"
+#         "3. Clear cache\n"
+#         "4. Retry"
+#     )
+#
+#     ticket.confidence_score = 0.42
+#
+#     ticket.save()
 
     is_employee = False
 
@@ -72,6 +82,8 @@ def ticket_detail(request, ticket_id):
             ticket.resolved_by = employee.employee_id
             ticket.resolved_at = timezone.now()
             ticket.save()
+            messages.success(request, "Ticket resolved successfully.")
+            return redirect("dashboard")
             
         elif action == "escalate":
             if employee.position == "L1":

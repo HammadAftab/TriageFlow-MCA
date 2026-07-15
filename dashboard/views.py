@@ -6,18 +6,6 @@ from users.models import Employee
 
 @login_required
 def dashboard_view(request):
-
-    if request.method == 'POST':
-        body = request.POST.get('body')
-
-        if body:
-            Ticket.objects.create(
-                created_by=request.user,
-                body=body
-            )
-
-        return redirect('dashboard')
-
     # Check whether logged-in account is employee
     try:
         employee = Employee.objects.get(user=request.user)
