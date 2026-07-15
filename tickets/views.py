@@ -7,6 +7,7 @@ from .models import Ticket
 from users.models import Employee
 
 from ai.scripts.classifier import predict_queue
+from ai.scripts.ticket_retriever import retrieve_similar_tickets
 
 
 @login_required
@@ -64,6 +65,12 @@ def ticket_detail(request, ticket_id):
 #     ticket.confidence_score = 0.42
 #
 #     ticket.save()
+    if not ticket.resolution:
+        results = retrieve_similar_tickets(ticket.subject, ticket.body, top_k=3)
+
+        if results:
+            ticket.resolution = results[0]["resolution"]
+            ticket.save()
 
     is_employee = False
 
@@ -101,11 +108,15 @@ def ticket_detail(request, ticket_id):
                 request,
                 f"Ticket escalated to {ticket.current_level} successfully."
             )
-            
+
             return redirect("dashboard")
+
+
+    similar_tickets = retrieve_similar_tickets(ticket.subject, ticket.body, top_k=3)
 
     return render(request, "ticket_detail.html", {
             "ticket": ticket,
             "employee": employee,
             "is_employee": is_employee
+            "similar_tickets": similar_tickets,
     })
