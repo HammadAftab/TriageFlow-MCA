@@ -1,5 +1,5 @@
-from pathlib import Path
 import joblib
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -8,12 +8,15 @@ classifier = joblib.load(BASE_DIR / "models" / "queue_classifier.pkl")
 
 
 def predict_queue(subject, body):
-    text = f"{subject} {body}"
+    text = subject + " " + body
 
     X = vectorizer.transform([text])
 
-    prediction = classifier.predict(X)[0]
+    predicted_queue = classifier.predict(X)[0]
 
-    confidence = classifier.predict_proba(X).max()
+    # Confidence using decision_function
+    scores = classifier.decision_function(X)
 
-    return prediction, float(confidence)
+    confidence = float(scores.max())
+
+    return predicted_queue, confidence
