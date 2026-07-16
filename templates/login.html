@@ -135,12 +135,13 @@
                         name="password"
                         class="form-control"
                         placeholder="Password"
+                        minlength="6"
                         required>
 
                     <button type="button"
                             class="password-toggle"
                             onclick="togglePassword('loginPassword', this)">
-                        👁
+                            <i class="bi bi-eye"></i>
                     </button>
                 </div>
 
@@ -182,31 +183,33 @@
 
                 <div class="password-wrapper mb-2">
                     <input type="password"
-                        id="loginPassword"
+                        id="signupPassword"
                         name="password"
                         class="form-control"
                         placeholder="Password"
+                        minlength="6"
                         required>
 
                     <button type="button"
                             class="password-toggle"
-                            onclick="togglePassword('loginPassword', this)">
-                        👁
+                            onclick="togglePassword('signupPassword', this)">
+                            <i class="bi bi-eye"></i>
                     </button>
                 </div>
 
                 <div class="password-wrapper mb-2">
                     <input type="password"
-                        id="loginPassword"
-                        name="password"
+                        id="confirmPassword"
+                        name="confirm_password"
                         class="form-control"
-                        placeholder="Password"
+                        placeholder="Confirm Password"
+                        minlength="6"
                         required>
 
                     <button type="button"
                             class="password-toggle"
-                            onclick="togglePassword('loginPassword', this)">
-                        👁
+                            onclick="togglePassword('confirmPassword', this)">
+                            <i class="bi bi-eye"></i>
                     </button>
                 </div>
 

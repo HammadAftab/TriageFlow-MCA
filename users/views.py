@@ -76,18 +76,14 @@ def signup_view(request):
     return render(request, 'login.html')
 
 
-# =========================
-# LOGOUT
-# =========================
+
 def logout_view(request):
 
     logout(request)
     return redirect('login')
 
 
-# =========================
-# EMPLOYEE LOGIN
-# =========================
+
 def employee_login_view(request):
 
     if request.method == "POST":
@@ -123,9 +119,6 @@ def employee_login_view(request):
     return render(request, 'employee_login.html')
 
 
-# =========================
-# EMPLOYEE SIGNUP
-# =========================
 def employee_signup_view(request):
 
     if request.method == "POST":

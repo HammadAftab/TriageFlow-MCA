@@ -59,6 +59,7 @@ Rules:
 - Be as relevant to the ticket as possible.
 - If additional information is required to diagnose the issue, end with exactly one sentence asking the user to raise a new ticket and include the specific information needed.
 - Do not ask the user to reply because tickets are closed after the resolution is provided.
+- Do not add asterisks as bullet points, make it look really well presentable.
 """
 
     response = client.models.generate_content(
