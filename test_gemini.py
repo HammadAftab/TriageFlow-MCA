@@ -1,18 +1,51 @@
-import os
-from dotenv import load_dotenv
-from google import genai
+from ai.scripts.ticket_retriever import retrieve_similar_tickets
+from ai.scripts.llm_helper import generate_resolution
 
-load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+subject = "Internet disconnects frequently"
 
-MODEL = "gemini-3.1-flash-lite"
+body = """
+My internet connection disconnects every 10-15 minutes.
+I have restarted the router but the issue still exists.
+"""
 
-print("Using model:", MODEL)
+print("Searching similar tickets...\n")
 
-response = client.models.generate_content(
-    model=MODEL,
-    contents="Say Hello"
+results = retrieve_similar_tickets(subject, body, top_k=3)
+
+print("=" * 80)
+print("SIMILAR TICKETS")
+print("=" * 80)
+
+for i, r in enumerate(results, start=1):
+    print(f"\nTicket {i}")
+    print("-" * 50)
+    print("Distance:", round(r["distance"], 4))
+
+    print("\nOriginal Ticket:")
+    print(r["ticket"])
+
+    print("\nResolution:")
+    print(r["resolution"])
+
+ticket_text = f"""
+Subject:
+{subject}
+
+Body:
+{body}
+"""
+
+print("\n")
+print("=" * 80)
+print("GENERATING FINAL RESOLUTION...")
+print("=" * 80)
+
+# Passing the entire results list
+final_resolution = generate_resolution(
+    ticket_text,
+    results
 )
 
-print(response.text)
+print("\nFINAL AI RESOLUTION\n")
+print(final_resolution)

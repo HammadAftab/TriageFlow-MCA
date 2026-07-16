@@ -9,41 +9,61 @@ client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
+MODEL = "gemini-3.1-flash-lite"
 
-def generate_resolution(ticket, similar_resolutions):
+
+def generate_resolution(ticket, similar_tickets):
+
+    similar_text = ""
+
+    for i, t in enumerate(similar_tickets, start=1):
+        similar_text += f"""
+Reference Ticket {i}
+--------------------
+Original Issue:
+{t["ticket"]}
+
+Resolution:
+{t["resolution"]}
+
+"""
 
     prompt = f"""
 You are an experienced IT support engineer.
 
-Customer ticket:
+A customer has raised the following ticket.
+
+Customer Ticket
+----------------
 {ticket}
 
-Previous successful resolutions from similar support tickets:
-{similar_resolutions}
+Below are the 3 most similar previously resolved tickets.
 
-You are an experienced IT support engineer.
+{similar_text}
 
-Write a professional resolution that can be understood by a non-technical user.
+Your task is to write ONE improved professional resolution.
 
-Your task is to generate the best possible resolution for the current ticket.
+Use the previous tickets only as reference.
+Do NOT copy any one resolution exactly.
+Analyze all reference tickets before answering. 
+If multiple reference tickets contain useful troubleshooting steps, combine them into one coherent resolution. 
+Do not ignore a relevant reference unless it is clearly unrelated or redundant.
+Only include steps that are relevant to the customer's issue.
 
 Rules:
-- Use the previous resolutions only as guidance.
-- Do not copy them word for word.
-- Combine the most relevant ideas if appropriate.
-- Write for a non-technical customer.
-- Use simple English.
 - Maximum 6 bullet points.
+- Use simple English.
+- Avoid technical jargon like "network adapter", "firmware", "DNS", "driver" unless absolutely necessary.
 - Start with the easiest troubleshooting steps.
-- Avoid technical terms unless absolutely necessary.
-- Be specific to the customer's issue.
-- Keep the response concise.
-- If additional information is needed, politely ask for it at the end.
+- Keep the response short unless additional detail is absolutely necessary.
+- Be as relevant to the ticket as possible.
+- If additional information is required to diagnose the issue, end with exactly one sentence asking the user to raise a new ticket and include the specific information needed.
+- Do not ask the user to reply because tickets are closed after the resolution is provided.
 """
 
     response = client.models.generate_content(
-    model="gemini-flash-lite-latest",
-    contents=prompt
+        model=MODEL,
+        contents=prompt
     )
 
     return response.text
