@@ -8,6 +8,7 @@ from users.models import Employee
 
 from ai.scripts.classifier import predict_queue
 from ai.scripts.ticket_retriever import retrieve_similar_tickets
+from ai.scripts.generator import generate_resolution
 
 
 @login_required
@@ -65,12 +66,29 @@ def ticket_detail(request, ticket_id):
 #     ticket.confidence_score = 0.42
 #
 #     ticket.save()
+    
+    
     if not ticket.resolution:
         results = retrieve_similar_tickets(ticket.subject, ticket.body, top_k=3)
 
-        if results:
-            ticket.resolution = results[0]["resolution"]
-            ticket.save()
+    if results:
+        similar_resolutions = "\n\n".join(
+            [
+                f"Resolution {i+1}:\n{r['resolution']}"
+                for i, r in enumerate(results)
+            ]
+        )
+
+        ticket_text = f"""
+Subject:
+{ticket.subject}
+
+Description:
+{ticket.body}
+"""
+
+        ticket.resolution = generate_resolution(ticket_text, similar_resolutions)
+        ticket.save()
 
     is_employee = False
 

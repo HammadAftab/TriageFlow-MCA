@@ -1,54 +1,49 @@
 import os
 
 from dotenv import load_dotenv
-import google.generativeai as genai
-
+from google import genai
 
 load_dotenv()
 
-genai.configure(
+client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
-model = genai.GenerativeModel("gemini-2.5-flash")
 
-
-def generate_resolution(subject, body, retrieved_tickets):
-
-    context = ""
-
-    for i, ticket in enumerate(retrieved_tickets, start=1):
-
-        context += (
-            f"\nSimilar Ticket {i}\n"
-            f"Problem:\n{ticket['ticket']}\n\n"
-            f"Resolution:\n{ticket['resolution']}\n\n"
-        )
+def generate_resolution(ticket, similar_resolutions):
 
     prompt = f"""
-You are an IT support assistant.
+You are an experienced IT support engineer.
 
-A customer has submitted the following ticket.
+Customer ticket:
+{ticket}
 
-Subject:
-{subject}
+Previous successful resolutions from similar support tickets:
+{similar_resolutions}
 
-Description:
-{body}
+You are an experienced IT support engineer.
 
-Below are similar resolved tickets.
+Write a professional resolution that can be understood by a non-technical user.
 
-{context}
+Your task is to generate the best possible resolution for the current ticket.
 
-Using only the information above, write:
-
-1. Most likely issue.
-2. Step-by-step resolution.
-3. If uncertain, mention that the ticket should be escalated.
-
-Keep the answer professional and under 200 words.
+Rules:
+- Use the previous resolutions only as guidance.
+- Do not copy them word for word.
+- Combine the most relevant ideas if appropriate.
+- Write for a non-technical customer.
+- Use simple English.
+- Maximum 6 bullet points.
+- Start with the easiest troubleshooting steps.
+- Avoid technical terms unless absolutely necessary.
+- Be specific to the customer's issue.
+- Keep the response concise.
+- If additional information is needed, politely ask for it at the end.
 """
 
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+    model="gemini-flash-lite-latest",
+    contents=prompt
+    )
 
     return response.text
