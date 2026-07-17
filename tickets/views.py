@@ -10,6 +10,8 @@ from ai.scripts.classifier import predict_queue
 from ai.scripts.ticket_retriever import retrieve_similar_tickets
 from ai.scripts.llm_helper import generate_resolution
 
+import statistics
+
 
 @login_required
 def raise_ticket(request):
@@ -56,36 +58,66 @@ def ticket_detail(request, ticket_id):
     #    ticket.save(update_fields=["confidence_score"])
 
     if results:
-        top_similarity = results[0]["similarity"]
 
-        average_similarity = (
-            sum(r["similarity"] for r in results)
-            / len(results)
-        )
+        similarities = [r["similarity"] for r in results]
+
+        top_similarity = similarities[0]
+
+        average_similarity = sum(similarities) / len(similarities)
+
+        if len(similarities) > 1:
+            std_deviation = statistics.stdev(similarities)
+        else:
+            std_deviation = 0
+
+        consistency_score = max(0, 1 - std_deviation)
 
         retrieval_confidence = (
-            0.7 * top_similarity
-            + 0.3 * average_similarity
+            0.5 * top_similarity +
+            0.3 * average_similarity +
+            0.2 * consistency_score
         )
-
-        print("Top Similarity:", top_similarity)
-        print("Average Similarity:", average_similarity)
-        print("Retrieval Confidence:", retrieval_confidence)
-
 
         classifier_confidence = ticket.classifier_confidence
 
-        final_confidence = (
-            0.4 * classifier_confidence +
-            0.6 * retrieval_confidence
+
+        classifier_confidence = max(
+            classifier_confidence,
+            retrieval_confidence * 0.85
         )
+
+        # Weighted ensemble
+        final_confidence = (
+            0.35 * classifier_confidence +
+            0.65 * retrieval_confidence
+        )
+
+        # Boost confidence for very strong retrieval evidence
+        if retrieval_confidence >= 0.85:
+            final_confidence += 0.10
+        elif retrieval_confidence >= 0.75:
+            final_confidence += 0.07
+        elif retrieval_confidence >= 0.65:
+            final_confidence += 0.05
+        elif retrieval_confidence >= 0.55:
+            final_confidence += 0.03
+
+        # Keep the score within 0-98%
+        final_confidence = min(final_confidence, 0.98)
 
         ticket.confidence_score = round(final_confidence * 100, 1)
 
         ticket.save(update_fields=["confidence_score"])
 
-        print("Classifier Confidence:", classifier_confidence)
-        print("Final Confidence:", ticket.confidence_score)
+        print("=" * 60)
+        print("Top Similarity       :", round(top_similarity, 4))
+        print("Average Similarity   :", round(average_similarity, 4))
+        print("Std Deviation        :", round(std_deviation, 4))
+        print("Consistency Score    :", round(consistency_score, 4))
+        print("Retrieval Confidence :", round(retrieval_confidence, 4))
+        print("Classifier Confidence:", round(classifier_confidence, 4))
+        print("Final Confidence     :", ticket.confidence_score)
+        print("=" * 60)
 
 
     if ticket.created_by == request.user:

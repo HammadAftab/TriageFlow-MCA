@@ -21,6 +21,7 @@ print("Generating embeddings...")
 embeddings = MODEL.encode(
     texts,
     convert_to_numpy=True,
+    normalize_embeddings=True,
     show_progress_bar=True
 )
 

@@ -30,7 +30,8 @@ with open(BASE_DIR / "models" / "ticket_answers.pkl", "rb") as f:
 def retrieve_similar_tickets(subject, body, top_k=3):
     query = f"{subject.strip()} {body.strip()}"
     
-    embedding = model.encode([query], convert_to_numpy=True)
+    #embedding = model.encode([query], convert_to_numpy=True)
+    embedding = model.encode([query], convert_to_numpy=True, normalize_embeddings=True)
 
     distances, indices = index.search(embedding, top_k)
 
