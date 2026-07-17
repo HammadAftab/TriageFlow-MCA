@@ -34,10 +34,22 @@ def retrieve_similar_tickets(subject, body, top_k=3):
 
     for distance, idx in zip(distances[0], indices[0]):
 
+        #results.append({
+        #    "ticket": ticket_texts[idx].replace("\\n", "\n"),
+        #    "resolution": ticket_answers[idx].replace("\\n", "\n"),
+        #    "distance": float(distance)
+        #})
+
+
+        # FAISS returns cosine distance because the embeddings are normalized. 
+        # So, converting it to cosine similarity.
+        similarity = max(0.0, min(1.0, 1 - (float(distance) / 2)))
+
         results.append({
             "ticket": ticket_texts[idx].replace("\\n", "\n"),
             "resolution": ticket_answers[idx].replace("\\n", "\n"),
-            "distance": float(distance)
+            "distance": float(distance),
+            "similarity": similarity
         })
 
     return results

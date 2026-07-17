@@ -6,7 +6,6 @@ class Ticket(models.Model):
 
     STATUS_CHOICES = [
         ('Open', 'Open'),
-        ('Pending', 'Pending'),
         ('Closed', 'Closed')
     ]
 
@@ -38,10 +37,7 @@ class Ticket(models.Model):
         default='L1'
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
     
-    resolved_at = models.DateTimeField(null=True, blank=True)
-
     # AI fields
     predicted_queue = models.CharField(
         max_length=100,
@@ -52,15 +48,20 @@ class Ticket(models.Model):
         blank=True
     )
 
+    classifier_confidence = models.FloatField(default=0)
+
     confidence_score = models.FloatField(
         default=0
     )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    resolved_at = models.DateTimeField(null=True, blank=True)
 
     resolved_by = models.CharField(
         max_length=100,
         blank=True
     )
-
    
 
     def __str__(self):

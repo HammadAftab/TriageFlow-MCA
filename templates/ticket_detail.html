@@ -188,9 +188,9 @@ Confidence Score
 <div class="confidence">
 
 {% if ticket.confidence_score %}
-{{ ticket.confidence_score }}
+{{ ticket.confidence_score }}%
 {% else %}
-0
+0%
 {% endif %}
 
 </div>
@@ -218,9 +218,13 @@ Support Level
 Suggested Resolution
 </div>
 
-<pre>{{ ticket.resolution }}</pre>
+<textarea
+    name="resolution"
+    class="form-control"
+    rows="10"
+    style="white-space: pre-wrap;"
+>{{ ticket.resolution }}</textarea>
 
-</div>
 
 
 <form method="POST">

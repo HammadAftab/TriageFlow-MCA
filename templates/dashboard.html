@@ -38,7 +38,11 @@ body { background: #f5f7fb; font-family: 'Segoe UI', sans-serif; }
     <div class="ms-auto text-white">
     Welcome, {{ request.user.username }} |
     
-    {% if not is_employee %}
+    {% if is_employee %}
+        <span class="badge bg-light text-dark px-3 py-2">
+            Support Level: {{ position }}
+        </span>
+    {% else %}
     <a href="{% url 'raise_ticket' %}" class="text-white text-decoration-underline me-3">
         Raise a ticket
     </a>

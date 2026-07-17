@@ -12,16 +12,6 @@ from ai.scripts.llm_helper import generate_resolution
 
 
 @login_required
-def my_tickets(request):
-
-    tickets = Ticket.objects.filter(created_by=request.user).order_by("-created_at")
-
-    return render(request, "my_tickets.html", {
-            "my_tickets": tickets
-        }
-    )
-
-@login_required
 def raise_ticket(request):
     if request.method == "POST":
         subject = request.POST.get("subject", "")
@@ -34,11 +24,9 @@ def raise_ticket(request):
             subject=subject,
             body=body,
             predicted_queue=predicted_queue,
-            confidence_score=confidence
+            classifier_confidence=confidence   
         )
-
         return redirect("dashboard")
-
     return render(request, "raise_ticket.html")
 
 
@@ -46,8 +34,19 @@ def raise_ticket(request):
 def ticket_detail(request, ticket_id):
 
     ticket = get_object_or_404(Ticket, id=ticket_id)
-
     results = retrieve_similar_tickets(ticket.subject, ticket.body, top_k=3)
+    
+    # AI Confidence Score
+    if results:
+        top_similarity = results[0]["similarity"]
+        avg_similarity = sum(r["similarity"] for r in results) / len(results)
+        confidence = (
+            0.7 * top_similarity +
+            0.3 * avg_similarity
+        )
+        ticket.confidence_score = round(confidence * 100, 1)
+        ticket.save(update_fields=["confidence_score"])
+
 
     if ticket.created_by == request.user:
         return render(request, "customer_ticket_detail.html",
@@ -57,7 +56,6 @@ def ticket_detail(request, ticket_id):
         )
 
     # Temporary AI simulation
-    
 #   if not ticket.predicted_queue:
 #
 #     ticket.predicted_queue = "Technical Support"
@@ -94,12 +92,20 @@ def ticket_detail(request, ticket_id):
         return redirect("dashboard")
 
     if request.method == "POST":
+        edited_resolution = request.POST.get("resolution", ticket.resolution)
         action = request.POST.get("action")
 
         if action == "resolve":
             ticket.status = "Closed"
+          
+            ticket.save()
+            return redirect("dashboard")
+        
+        if action == "resolve":
+            ticket.resolution = edited_resolution
             ticket.resolved_by = employee.employee_id
             ticket.resolved_at = timezone.now()
+            ticket.status = "Closed"
             ticket.save()
             messages.success(request, "Ticket resolved successfully.")
             return redirect("dashboard")
