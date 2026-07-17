@@ -50,9 +50,7 @@ class Ticket(models.Model):
 
     classifier_confidence = models.FloatField(default=0)
 
-    confidence_score = models.FloatField(
-        default=0
-    )
+    confidence_score = models.FloatField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
     

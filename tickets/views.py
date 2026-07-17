@@ -18,6 +18,10 @@ def raise_ticket(request):
         body = request.POST.get("body", "")
 
         predicted_queue, confidence = predict_queue(subject, body)
+        
+        print("=" * 50)
+        print("Classifier Confidence:", confidence)
+        print("=" * 50)
 
         Ticket.objects.create(
             created_by=request.user,
@@ -35,17 +39,53 @@ def ticket_detail(request, ticket_id):
 
     ticket = get_object_or_404(Ticket, id=ticket_id)
     results = retrieve_similar_tickets(ticket.subject, ticket.body, top_k=3)
+
+    print("=" * 50)
+    print(results)
+    print("=" * 50)
     
     # AI Confidence Score
+    #if results:
+    #    top_similarity = results[0]["similarity"]
+    #    avg_similarity = sum(r["similarity"] for r in results) / len(results)
+    #    confidence = (
+    #        0.7 * top_similarity +
+    #        0.3 * avg_similarity
+    #    )
+    #    ticket.confidence_score = round(confidence * 100, 1)
+    #    ticket.save(update_fields=["confidence_score"])
+
     if results:
         top_similarity = results[0]["similarity"]
-        avg_similarity = sum(r["similarity"] for r in results) / len(results)
-        confidence = (
-            0.7 * top_similarity +
-            0.3 * avg_similarity
+
+        average_similarity = (
+            sum(r["similarity"] for r in results)
+            / len(results)
         )
-        ticket.confidence_score = round(confidence * 100, 1)
+
+        retrieval_confidence = (
+            0.7 * top_similarity
+            + 0.3 * average_similarity
+        )
+
+        print("Top Similarity:", top_similarity)
+        print("Average Similarity:", average_similarity)
+        print("Retrieval Confidence:", retrieval_confidence)
+
+
+        classifier_confidence = ticket.classifier_confidence
+
+        final_confidence = (
+            0.4 * classifier_confidence +
+            0.6 * retrieval_confidence
+        )
+
+        ticket.confidence_score = round(final_confidence * 100, 1)
+
         ticket.save(update_fields=["confidence_score"])
+
+        print("Classifier Confidence:", classifier_confidence)
+        print("Final Confidence:", ticket.confidence_score)
 
 
     if ticket.created_by == request.user:
@@ -73,14 +113,21 @@ def ticket_detail(request, ticket_id):
     
 
 
-    if not ticket.resolution:
-        if results:
-            ticket.resolution = generate_resolution(
-                f"Subject: {ticket.subject}\n\nBody:\n{ticket.body}",
-                results
-            )
-            ticket.save()
+    #if not ticket.resolution:
+    #    if results:
+    #        ticket.resolution = generate_resolution(
+    #            f"Subject: {ticket.subject}\n\nBody:\n{ticket.body}",
+    #            results
+    #        )
+    #        ticket.save()
 
+    
+    if not ticket.resolution and results:
+        ticket.resolution = generate_resolution(
+        f"Subject: {ticket.subject}\n\nBody:\n{ticket.body}",
+        results
+        )
+        ticket.save(update_fields=["resolution"])
 
 
     is_employee = False
@@ -96,21 +143,24 @@ def ticket_detail(request, ticket_id):
         action = request.POST.get("action")
 
         if action == "resolve":
-            ticket.status = "Closed"
-          
-            ticket.save()
-            return redirect("dashboard")
-        
-        if action == "resolve":
+            
             ticket.resolution = edited_resolution
             ticket.resolved_by = employee.employee_id
             ticket.resolved_at = timezone.now()
             ticket.status = "Closed"
+            print("=" * 50)
+            print("Edited Resolution:")
+            print(edited_resolution)
+            print("=" * 50)
             ticket.save()
+
             messages.success(request, "Ticket resolved successfully.")
             return redirect("dashboard")
+
             
         elif action == "escalate":
+            ticket.resolution = edited_resolution
+
             if employee.position == "L1":
                 ticket.current_level = "L2"
             elif employee.position == "L2":
@@ -122,10 +172,7 @@ def ticket_detail(request, ticket_id):
             ticket.status = "Open"
             ticket.save()
 
-            messages.success(
-                request,
-                f"Ticket escalated to {ticket.current_level} successfully."
-            )
+            messages.success(request, f"Ticket escalated to {ticket.current_level} successfully.")
 
             return redirect("dashboard")
 
@@ -138,8 +185,6 @@ def ticket_detail(request, ticket_id):
             "is_employee": is_employee,
             "similar_tickets": similar_tickets,
     })
-
-
 
 
 @login_required

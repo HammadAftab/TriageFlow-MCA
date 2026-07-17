@@ -127,7 +127,6 @@ Submitted on {{ ticket.created_at }}
 
 </div>
 
-
 <div class="section">
 
 <div class="label">
@@ -156,21 +155,21 @@ Issue Description
 
 <div class="section resolution-box">
 
-<h4 class="mb-3">
-💡 Suggested Resolution
-</h4>
+{% if ticket.status == "Closed" %}
 
-{% if ticket.resolution %}
+<h4 class="mb-3">Resolution</h4>
 
-<pre>{{ ticket.resolution }}</pre>
+<div class="alert alert-success">
+    {{ ticket.resolution|linebreaks }}
+</div>
 
 {% else %}
 
-<p class="text-muted mb-0">
-Your ticket is currently being reviewed by our support team.
-
-A resolution will appear here once it becomes available.
-</p>
+<div class="alert alert-warning">
+    <strong>Ticket Status:</strong> {{ ticket.status }}<br>
+    Your ticket is currently being reviewed by our support team.
+    The resolution will become available once the ticket has been resolved.
+</div>
 
 {% endif %}
 

@@ -207,12 +207,15 @@ Support Level
 <div class="value">
 {{ ticket.current_level }}
 </div>
-
 </div>
-
 </div>
-
 <hr>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="action-row">
 
 <div class="label">
 Suggested Resolution
@@ -224,14 +227,6 @@ Suggested Resolution
     rows="10"
     style="white-space: pre-wrap;"
 >{{ ticket.resolution }}</textarea>
-
-
-
-<form method="POST">
-
-{% csrf_token %}
-
-<div class="action-row">
 
 <button
 type="submit"
